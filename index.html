@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medya Takip - Kişisel Arşivim</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Ana Container -->
+    <div class="container">
+        
+        <!-- Başlık Bölümü -->
+        <header>
+            <h1>🎬 Medya Takip</h1>
+            <p>Kişisel içerik arşivin</p>
+        </header>
+
+        <!-- Ekleme ve Arama Bölümü -->
+        <div class="controls">
+            <!-- Yeni İçerik Ekleme Butonu -->
+            <button id="addBtn" class="btn btn-primary">+ Yeni Ekle</button>
+            
+            <!-- Arama Kutusu (Otomatik Tamamlama ile) -->
+            <div class="search-wrapper">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="🔍 Ara veya medya adı yaz..."
+                    autocomplete="off">
+                <!-- Otomatik Tamamlama Önerileri -->
+                <div id="autocompleteList" class="autocomplete-list"></div>
+            </div>
+        </div>
+
+        <!-- Filtreleme Bölümü -->
+        <div class="filters">
+            <!-- Tür Filtresi -->
+            <select id="filterType" class="filter-select">
+                <option value="all">📚 Tüm Türler</option>
+                <option value="film">🎬 Film</option>
+                <option value="dizi">📺 Dizi</option>
+                <option value="anime">🎌 Anime</option>
+                <option value="manga">📖 Manga</option>
+                <option value="kitap">📚 Kitap</option>
+                <option value="belgesel">🎥 Belgesel</option>
+            </select>
+
+            <!-- Durum Filtresi -->
+            <select id="filterStatus" class="filter-select">
+                <option value="all">📋 Tüm Durumlar</option>
+                <option value="izlendi">✅ İzlendi/Okundu</option>
+                <option value="izlenecek">⏰ İzlenecek/Okunacak</option>
+                <option value="devam">🔄 Devam Ediyor</option>
+                <option value="yarim">❌ Yarım Bırakıldı</option>
+            </select>
+        </div>
+
+        <!-- İçeriklerin Listelendiği Alan -->
+        <div id="mediaList" class="media-list">
+            <!-- Kartlar buraya JavaScript ile eklenecek -->
+        </div>
+
+        <!-- Boş Liste Mesajı -->
+        <div id="emptyMessage" class="empty-message">
+            <div class="empty-icon">📭</div>
+            <p>Henüz hiç içerik eklenmemiş</p>
+            <p class="empty-hint">Yukarıdaki "+ Yeni Ekle" butonuna tıklayarak başla!</p>
+        </div>
+
+    </div>
+
+    <!-- Tema Değiştirme Butonu (Floating Action Button) -->
+    <button id="themeToggle" class="theme-fab" title="Tema Değiştir">
+        🎨
+    </button>
+
+    <!-- Modal (Popup) - Ekleme/Düzenleme Formu -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <!-- Modal Başlığı -->
+            <div class="modal-header">
+                <h2 id="modalTitle">➕ Yeni İçerik Ekle</h2>
+                <button id="closeModal" class="close-btn">&times;</button>
+            </div>
+
+            <!-- Form -->
+            <form id="mediaForm">
+                <!-- Başlık -->
+                <div class="form-group">
+                    <label for="title">Başlık *</label>
+                    <input 
+                        type="text" 
+                        id="title" 
+                        required 
+                        placeholder="Örn: Inception">
+                </div>
+
+                <!-- Poster Resmi Seçimi (Dosyadan Yükleme) -->
+                <div class="form-group">
+                    <label>Poster Resmi (isteğe bağlı)</label>
+                    <div class="image-upload-section">
+                        <!-- Önizleme Alanı -->
+                        <div id="imagePreview" class="image-preview">
+                            <span class="preview-placeholder">📷 Resim seçilmedi</span>
+                        </div>
+                        <!-- Dosya Seçme Butonu -->
+                        <label for="imageInput" class="btn-file-upload">
+                            📁 Cihazdan Resim Seç
+                        </label>
+                        <input 
+                            type="file" 
+                            id="imageInput" 
+                            accept="image/*" 
+                            style="display: none;">
+                        <small class="form-hint">JPG, PNG veya WebP formatı (maks. 5MB)</small>
+                        <!-- Resmi Kaldırma Butonu -->
+                        <button type="button" id="removeImage" class="btn-remove-image" style="display: none;">
+                            🗑️ Resmi Kaldır
+                        </button>
+                    </div>
+                    <!-- Gizli input: Base64 resmi saklar -->
+                    <input type="hidden" id="imageData">
+                </div>
+
+                <!-- Tür ve Durum - Yan Yana -->
+                <div class="form-row">
+                    <!-- Tür -->
+                    <div class="form-group">
+                        <label for="type">Tür *</label>
+                        <select id="type" required>
+                            <option value="film">🎬 Film</option>
+                            <option value="dizi">📺 Dizi</option>
+                            <option value="anime">🎌 Anime</option>
+                            <option value="manga">📖 Manga</option>
+                            <option value="kitap">📚 Kitap</option>
+                            <option value="belgesel">🎥 Belgesel</option>
+                        </select>
+                    </div>
+
+                    <!-- Durum -->
+                    <div class="form-group">
+                        <label for="status">Durum *</label>
+                        <select id="status" required>
+                            <option value="izlendi">✅ İzlendi/Okundu</option>
+                            <option value="izlenecek">⏰ İzlenecek/Okunacak</option>
+                            <option value="devam">🔄 Devam Ediyor</option>
+                            <option value="yarim">❌ Yarım Bırakıldı</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tarih Alanları (Duruma Göre Görünür) -->
+                <div id="dateFieldsWrapper" style="display: none;">
+                    <div class="form-row">
+                        <!-- Başlama Tarihi -->
+                        <div class="form-group" id="startDateGroup">
+                            <label for="startDate">📅 Başlama Tarihi</label>
+                            <input 
+                                type="date" 
+                                id="startDate">
+                        </div>
+
+                        <!-- Bitiş Tarihi (Sadece izlendiyse) -->
+                        <div class="form-group" id="endDateGroup" style="display: none;">
+                            <label for="endDate">🏁 Bitiş Tarihi</label>
+                            <input 
+                                type="date" 
+                                id="endDate">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Puan (Sadece İzlendiyse Görünür) -->
+                <div class="form-group" id="ratingGroup" style="display: none;">
+                    <label for="rating">⭐ Puan: <span id="ratingValue">5</span>/10</label>
+                    <input 
+                        type="range" 
+                        id="rating" 
+                        min="0" 
+                        max="10" 
+                        value="5" 
+                        class="rating-slider">
+                    <div class="stars" id="starsDisplay"></div>
+                </div>
+
+                <!-- Notlar -->
+                <div class="form-group">
+                    <label for="notes">📝 Notlar</label>
+                    <textarea 
+                        id="notes" 
+                        rows="4" 
+                        placeholder="Düşüncelerinizi yazın..."></textarea>
+                </div>
+
+                <!-- Butonlar -->
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Silme Onay Modal (Özel Tasarım) -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content delete-modal-content">
+            <div class="delete-modal-icon">⚠️</div>
+            <h3>Silmek istediğinize emin misiniz?</h3>
+            <p id="deleteItemName" class="delete-item-name"></p>
+            <p class="delete-warning">Bu işlem geri alınamaz!</p>
+            <div class="delete-modal-actions">
+                <button id="cancelDelete" class="btn btn-secondary">Vazgeç</button>
+                <button id="confirmDelete" class="btn btn-danger">Evet, Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Dosyası -->
+    <script src="script.js"></script>
+</body>
+</html>
